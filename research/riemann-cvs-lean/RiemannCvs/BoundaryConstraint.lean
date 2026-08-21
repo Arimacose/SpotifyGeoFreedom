@@ -3,13 +3,15 @@ import Mathlib
 /-!
 # Boundary-constrained and displacement reductions for finite Weil matrices
 
-This file records two finite-dimensional reductions:
+This file records three finite-dimensional reductions:
 
 1. a rank-two displacement identity turns a boundary coefficient of an even
    eigenvector into an odd-sector resolvent equation;
 2. the lowest Rayleigh quotient under a boundary constraint gives a stable
    certificate for the ground eigenline even when the first spectral gap
-   collapses.
+   collapses;
+3. a boundary-null vector made from the first two eigenmodes converts that
+   certificate into a bound depending only on their boundary coefficients.
 
 The analytic and spectral inputs are explicit hypotheses. The conclusions are
 algebraic or order-theoretic and contain no asymptotic assumption.
@@ -129,6 +131,77 @@ theorem constrainedGroundCertificate
     hgap hdecomp htail
   have hquot : (nu - lambda₀) / (lambda₁ - lambda₀) ≤ eta := by
     exact (div_le_iff₀ hpos).2 heta
+  linarith
+
+/-- Exact normalized Rayleigh excess of the two-mode boundary-null test vector
+`c₁ x₀ - c₀ x₁`, assuming `x₀,x₁` are orthonormal eigenvectors with
+eigenvalues `lambda₀,lambda₁` and boundary coefficients `c₀,c₁`. -/
+theorem twoModeRayleighExcess
+    (lambda₀ lambda₁ c₀ c₁ : ℝ)
+    (hden : c₀ ^ 2 + c₁ ^ 2 ≠ 0) :
+    (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
+          (c₀ ^ 2 + c₁ ^ 2) - lambda₀ =
+      (c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2)) * (lambda₁ - lambda₀) := by
+  field_simp [hden] <;> ring
+
+/-- If the constrained minimum `nu` is no larger than the Rayleigh quotient of
+the two-mode boundary-null test vector, then its excess divided by the first
+spectral gap is controlled solely by the boundary coefficient ratio. -/
+theorem constrainedExcessFromTwoMode
+    (lambda₀ lambda₁ nu c₀ c₁ : ℝ)
+    (hgap : lambda₀ < lambda₁)
+    (hden : c₀ ^ 2 + c₁ ^ 2 ≠ 0)
+    (hnu :
+      nu ≤ (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
+        (c₀ ^ 2 + c₁ ^ 2)) :
+    (nu - lambda₀) / (lambda₁ - lambda₀) ≤
+      c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2) := by
+  have hpos : 0 < lambda₁ - lambda₀ := sub_pos.mpr hgap
+  apply (div_le_iff₀ hpos).2
+  calc
+    nu - lambda₀ ≤
+        (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
+          (c₀ ^ 2 + c₁ ^ 2) - lambda₀ :=
+      sub_le_sub_right hnu lambda₀
+    _ = (c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2)) *
+        (lambda₁ - lambda₀) :=
+      twoModeRayleighExcess lambda₀ lambda₁ c₀ c₁ hden
+
+/-- Gap-normalized ground-state defect certificate obtained by combining the
+spectral-weight inequality with the two-mode boundary-null trial vector. The
+absolute size of the collapsing first gap no longer appears in the result. -/
+theorem groundWeightDefectFromTwoMode
+    (lambda₀ lambda₁ nu w tail c₀ c₁ : ℝ)
+    (hgap : lambda₀ < lambda₁)
+    (hdecomp : nu = w * lambda₀ + tail)
+    (htail : (1 - w) * lambda₁ ≤ tail)
+    (hden : c₀ ^ 2 + c₁ ^ 2 ≠ 0)
+    (hnu :
+      nu ≤ (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
+        (c₀ ^ 2 + c₁ ^ 2)) :
+    1 - w ≤ c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2) := by
+  calc
+    1 - w ≤ (nu - lambda₀) / (lambda₁ - lambda₀) :=
+      spectralWeightDefectBound lambda₀ lambda₁ nu w tail
+        hgap hdecomp htail
+    _ ≤ c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2) :=
+      constrainedExcessFromTwoMode lambda₀ lambda₁ nu c₀ c₁
+        hgap hden hnu
+
+/-- Equivalent lower bound on the ground-state spectral weight produced by the
+two-mode boundary certificate. -/
+theorem groundWeightLowerBoundFromTwoMode
+    (lambda₀ lambda₁ nu w tail c₀ c₁ : ℝ)
+    (hgap : lambda₀ < lambda₁)
+    (hdecomp : nu = w * lambda₀ + tail)
+    (htail : (1 - w) * lambda₁ ≤ tail)
+    (hden : c₀ ^ 2 + c₁ ^ 2 ≠ 0)
+    (hnu :
+      nu ≤ (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
+        (c₀ ^ 2 + c₁ ^ 2)) :
+    1 - c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2) ≤ w := by
+  have h := groundWeightDefectFromTwoMode
+    lambda₀ lambda₁ nu w tail c₀ c₁ hgap hdecomp htail hden hnu
   linarith
 
 end VariationalCertificate
