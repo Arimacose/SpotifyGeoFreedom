@@ -7,6 +7,12 @@ on:
     paths:
       - research/riemann-cvs-lean/**
       - .github/workflows/riemann-cvs-lean.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - research/riemann-cvs-lean/**
+      - .github/workflows/riemann-cvs-lean.yml
   workflow_dispatch:
 
 permissions:
