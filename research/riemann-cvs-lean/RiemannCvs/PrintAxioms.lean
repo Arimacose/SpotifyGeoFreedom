@@ -16,3 +16,7 @@ import RiemannCvs
 #print axioms RiemannCvs.BoundaryConstraint.constrainedExcessFromTwoMode
 #print axioms RiemannCvs.BoundaryConstraint.groundWeightDefectFromTwoMode
 #print axioms RiemannCvs.BoundaryConstraint.groundWeightLowerBoundFromTwoMode
+#print axioms RiemannCvs.TwoStageApproximation.residualInnerIdentity
+#print axioms RiemannCvs.TwoStageApproximation.residualNormSq
+#print axioms RiemannCvs.TwoStageApproximation.overlapLowerBoundByResiduals
+#print axioms RiemannCvs.TwoStageApproximation.unitOverlapLowerBoundByResiduals
