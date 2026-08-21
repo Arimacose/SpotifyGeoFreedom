@@ -82,7 +82,7 @@ theorem halfWeightCancel (Λ sqrtq u a : 𝕜)
     (ha : a = 2 * Λ / (sqrtq * u)) :
     (1 / 2 : 𝕜) * u * a = Λ / sqrtq := by
   rw [ha]
-  field_simp [hu, hsqrt] <;> ring
+  field_simp [hu, hsqrt]
 
 end Arithmetic
 
