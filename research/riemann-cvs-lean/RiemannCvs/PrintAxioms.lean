@@ -12,3 +12,7 @@ import RiemannCvs
 #print axioms RiemannCvs.BoundaryConstraint.spectralWeightDefectBound
 #print axioms RiemannCvs.BoundaryConstraint.spectralWeightLowerBound
 #print axioms RiemannCvs.BoundaryConstraint.constrainedGroundCertificate
+#print axioms RiemannCvs.BoundaryConstraint.twoModeRayleighExcess
+#print axioms RiemannCvs.BoundaryConstraint.constrainedExcessFromTwoMode
+#print axioms RiemannCvs.BoundaryConstraint.groundWeightDefectFromTwoMode
+#print axioms RiemannCvs.BoundaryConstraint.groundWeightLowerBoundFromTwoMode
