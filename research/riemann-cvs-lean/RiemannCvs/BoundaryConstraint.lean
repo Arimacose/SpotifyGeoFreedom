@@ -142,7 +142,8 @@ theorem twoModeRayleighExcess
     (c₁ ^ 2 * lambda₀ + c₀ ^ 2 * lambda₁) /
           (c₀ ^ 2 + c₁ ^ 2) - lambda₀ =
       (c₀ ^ 2 / (c₀ ^ 2 + c₁ ^ 2)) * (lambda₁ - lambda₀) := by
-  field_simp [hden] <;> ring
+  field_simp [hden]
+  ring
 
 /-- If the constrained minimum `nu` is no larger than the Rayleigh quotient of
 the two-mode boundary-null test vector, then its excess divided by the first
