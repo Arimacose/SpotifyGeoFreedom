@@ -46,8 +46,9 @@ theorem boundaryOverlapDefect
     (c₀ c₁ : 𝕜) (hden : c₀ * c₀ + c₁ * c₁ ≠ 0) :
     1 - (c₁ * c₁) / (c₀ * c₀ + c₁ * c₁) =
       (c₀ * c₀) / (c₀ * c₀ + c₁ * c₁) := by
-  field_simp [hden]
-  ring
+  have hden' : c₁ ^ 2 + c₀ ^ 2 ≠ 0 := by
+    simpa [pow_two, add_comm] using hden
+  field_simp [hden, hden'] <;> ring
 
 end BoundaryLine
 
@@ -70,7 +71,8 @@ theorem displacementEigenvectorEquation
   have hD : D (Q x) = lambda • D x := by
     rw [hEig, map_smul]
   rw [hD] at hDisp
-  module
+  have hneg := congrArg (fun z : V => -z) hDisp
+  simpa only [neg_sub] using hneg
 
 /-- Applying an odd-sector reduced inverse to the displacement equation. -/
 theorem displacementResolventEquation
