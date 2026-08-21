@@ -46,9 +46,8 @@ theorem boundaryOverlapDefect
     (c₀ c₁ : 𝕜) (hden : c₀ * c₀ + c₁ * c₁ ≠ 0) :
     1 - (c₁ * c₁) / (c₀ * c₀ + c₁ * c₁) =
       (c₀ * c₀) / (c₀ * c₀ + c₁ * c₁) := by
-  have hden' : c₁ ^ 2 + c₀ ^ 2 ≠ 0 := by
-    simpa [pow_two, add_comm] using hden
-  field_simp [hden, hden'] <;> ring
+  rw [one_sub_div hden]
+  ring
 
 end BoundaryLine
 
