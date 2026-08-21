@@ -41,7 +41,7 @@ identity before differentiating in the spectral variable. -/
 theorem functionalDerivativeJump
     (R : V →ₗ[𝕜] V) (ell : V →ₗ[𝕜] 𝕜)
     (x y v dxPlus dxMinus : V) (a c : 𝕜)
-    (hEll : ell x ≠ 0)
+    (_hEll : ell x ≠ 0)
     (hPlus : dxPlus = -R (y - (a * c) • v))
     (hMinus : dxMinus = -R y) :
     ell dxPlus / ell x - ell dxMinus / ell x
@@ -59,7 +59,7 @@ vector jump has already been established. -/
 theorem rankOneFunctionalTransfer
     (R : V →ₗ[𝕜] V) (ell : V →ₗ[𝕜] 𝕜)
     (x v dxJump : V) (a c : 𝕜)
-    (hEll : ell x ≠ 0)
+    (_hEll : ell x ≠ 0)
     (hJump : dxJump = (a * c) • R v) :
     ell dxJump / ell x = (a * c) * ell (R v) / ell x := by
   rw [hJump, map_smul]
@@ -82,8 +82,7 @@ theorem halfWeightCancel (Λ sqrtq u a : 𝕜)
     (ha : a = 2 * Λ / (sqrtq * u)) :
     (1 / 2 : 𝕜) * u * a = Λ / sqrtq := by
   rw [ha]
-  field_simp [hu, hsqrt]
-  ring
+  field_simp [hu, hsqrt] <;> ring
 
 end Arithmetic
 
