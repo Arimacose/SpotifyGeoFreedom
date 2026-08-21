@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build and independently audit Lean environment
-        uses: leanprover/lean-action@v1
+        uses: leanprover/lean-action@6835ef47e8423fa9e9eacfcbb8fdf83fae42c820
         with:
           lake-package-directory: research/riemann-cvs-lean
           build: true
