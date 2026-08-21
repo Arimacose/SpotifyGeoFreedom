@@ -1,0 +1,14 @@
+import RiemannCvs
+
+#print axioms RiemannCvs.PrimeEventTransfer.derivativeJump
+#print axioms RiemannCvs.PrimeEventTransfer.functionalDerivativeJump
+#print axioms RiemannCvs.PrimeEventTransfer.rankOneFunctionalTransfer
+#print axioms RiemannCvs.PrimeEventTransfer.halfWeightCancel
+#print axioms RiemannCvs.BoundaryConstraint.boundaryNullCombination
+#print axioms RiemannCvs.BoundaryConstraint.boundaryNullSlope
+#print axioms RiemannCvs.BoundaryConstraint.boundaryOverlapDefect
+#print axioms RiemannCvs.BoundaryConstraint.displacementEigenvectorEquation
+#print axioms RiemannCvs.BoundaryConstraint.displacementResolventEquation
+#print axioms RiemannCvs.BoundaryConstraint.spectralWeightDefectBound
+#print axioms RiemannCvs.BoundaryConstraint.spectralWeightLowerBound
+#print axioms RiemannCvs.BoundaryConstraint.constrainedGroundCertificate

@@ -1,0 +1,61 @@
+name: Riemann CvS Lean verification
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - research/riemann-cvs-lean/**
+      - .github/workflows/riemann-cvs-lean.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LEAN_NUM_THREADS: 2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and independently audit Lean environment
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: research/riemann-cvs-lean
+          build: true
+          test: false
+          lint: false
+          use-mathlib-cache: true
+          leanchecker: true
+          axiom-audit: true
+          axiom-audit-root: RiemannCvs
+          axiom-audit-allow: propext,Classical.choice,Quot.sound
+
+      - name: Reject proof placeholders
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' RiemannCvs; then
+            echo 'Proof placeholder detected.' >&2
+            exit 1
+          fi
+
+      - name: Print theorem axiom dependencies
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean RiemannCvs/PrintAxioms.lean | tee axiom-report.txt
+
+      - name: Upload axiom report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-axiom-report
+          path: research/riemann-cvs-lean/axiom-report.txt
+          if-no-files-found: warn
