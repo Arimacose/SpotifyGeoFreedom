@@ -20,3 +20,10 @@ import RiemannCvs
 #print axioms RiemannCvs.TwoStageApproximation.residualNormSq
 #print axioms RiemannCvs.TwoStageApproximation.overlapLowerBoundByResiduals
 #print axioms RiemannCvs.TwoStageApproximation.unitOverlapLowerBoundByResiduals
+#print axioms RiemannCvs.ProlateParityTransfer.evenTwoPoleWeight
+#print axioms RiemannCvs.ProlateParityTransfer.oddTwoPoleWeight
+#print axioms RiemannCvs.ProlateParityTransfer.normalizedFuchsQuarticConstant
+#print axioms RiemannCvs.ProlateParityTransfer.constrainedParityBounds
+#print axioms RiemannCvs.ProlateParityTransfer.constrainedParitySeparation
+#print axioms RiemannCvs.ProlateParityTransfer.oneSidedWeilParityTransfer
+#print axioms RiemannCvs.ProlateParityTransfer.absoluteErrorWeilParityTransfer
