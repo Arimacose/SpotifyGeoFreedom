@@ -1,0 +1,97 @@
+name: Riemann CvS rigorous spectral decades
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - research/riemann-cvs-numerics/certify_parity_gap.py
+      - research/riemann-cvs-numerics/certify_spectral_decades.py
+      - .github/workflows/riemann-cvs-spectral-decades.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-decades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - c: 13
+            N: 10
+            prec: 600
+            max_exp: 140
+          - c: 13
+            N: 20
+            prec: 900
+            max_exp: 180
+          - c: 13
+            N: 30
+            prec: 1200
+            max_exp: 220
+          - c: 13
+            N: 40
+            prec: 1600
+            max_exp: 280
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install interval dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install python-flint==0.8.0
+
+      - name: Certify spectral decade brackets
+        run: |
+          set -euo pipefail
+          mkdir -p research/riemann-cvs-numerics/artifacts
+          python research/riemann-cvs-numerics/certify_spectral_decades.py \
+            --c ${{ matrix.c }} \
+            --N ${{ matrix.N }} \
+            --prec ${{ matrix.prec }} \
+            --max-exp ${{ matrix.max_exp }} \
+            --coarse-step 8 \
+            --json-out research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_spectral_decades.json
+
+      - name: Show certificate summary
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          c = os.environ['CASE_C']
+          n = os.environ['CASE_N']
+          p = f'research/riemann-cvs-numerics/artifacts/c{c}_N{n}_spectral_decades.json'
+          with open(p, encoding='utf-8') as f:
+              d = json.load(f)
+          print(json.dumps({
+              'status': d['status'],
+              'scope': d['scope'],
+              'c': d['c'],
+              'N': d['N'],
+              'even_ground': d['even_ground']['proved_interval'],
+              'even_first_excited': d['even_first_excited']['proved_interval'],
+              'odd_ground': d['odd_ground']['proved_interval'],
+              'barrier_to_ground_lower_bound': d['barrier_to_ground_lower_bound'],
+              'evaluated_exponents': d['evaluated_exponents'],
+          }, indent=2))
+          PY
+        env:
+          CASE_C: ${{ matrix.c }}
+          CASE_N: ${{ matrix.N }}
+
+      - name: Upload interval certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-c${{ matrix.c }}-N${{ matrix.N }}-spectral-decades
+          path: research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_spectral_decades.json
+          if-no-files-found: error
