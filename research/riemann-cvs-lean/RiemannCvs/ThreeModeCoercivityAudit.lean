@@ -1,0 +1,8 @@
+import RiemannCvs.ThreeModeCoercivity
+
+#print axioms RiemannCvs.ThreeModeCoercivity.crossTermLower
+#print axioms RiemannCvs.ThreeModeCoercivity.crossTermUpper
+#print axioms RiemannCvs.ThreeModeCoercivity.lowerBoundOfDiagonalDominance
+#print axioms RiemannCvs.ThreeModeCoercivity.upperBoundOfEntryControl
+#print axioms RiemannCvs.ThreeModeCoercivity.twoSidedThreeModeCertificate
+#print axioms RiemannCvs.ThreeModeCoercivity.positiveDefiniteOfDiagonalDominance
