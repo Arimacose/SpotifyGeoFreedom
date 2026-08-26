@@ -1,0 +1,6 @@
+import RiemannCvs.NearIdentityTailMap
+
+#print axioms RiemannCvs.NearIdentityTailMap.norm_add_relative_error_bounds
+#print axioms RiemannCvs.NearIdentityTailMap.norm_sq_add_relative_error_bounds
+#print axioms RiemannCvs.NearIdentityTailMap.quartic_parity_survives_near_identity
+#print axioms RiemannCvs.NearIdentityTailMap.quartic_parity_survives_asymmetric_tail_errors
