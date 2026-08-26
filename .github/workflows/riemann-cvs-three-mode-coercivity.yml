@@ -1,0 +1,65 @@
+name: Riemann CvS three-mode coercivity verification
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/ThreeModeCoercivity.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/ThreeModeCoercivityAudit.lean'
+      - '.github/workflows/riemann-cvs-three-mode-coercivity.yml'
+  pull_request:
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/ThreeModeCoercivity.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/ThreeModeCoercivityAudit.lean'
+      - '.github/workflows/riemann-cvs-three-mode-coercivity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    env:
+      LEAN_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Lean toolchain and Mathlib cache
+        uses: leanprover/lean-action@6835ef47e8423fa9e9eacfcbb8fdf83fae42c820
+        with:
+          lake-package-directory: research/riemann-cvs-lean
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+          leanchecker: false
+          axiom-audit: false
+
+      - name: Elaborate coercivity certificate
+        working-directory: research/riemann-cvs-lean
+        run: |
+          set -euo pipefail
+          lake env lean RiemannCvs/ThreeModeCoercivity.lean
+          lake env lean RiemannCvs/ThreeModeCoercivityAudit.lean | tee three-mode-axioms.txt
+
+      - name: Reject proof placeholders
+        working-directory: research/riemann-cvs-lean
+        run: |
+          set -euo pipefail
+          if grep -RInE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' \
+              RiemannCvs/ThreeModeCoercivity.lean \
+              RiemannCvs/ThreeModeCoercivityAudit.lean; then
+            echo 'Proof placeholder detected.' >&2
+            exit 1
+          fi
+
+      - name: Enforce axiom allowlist
+        working-directory: research/riemann-cvs-lean
+        run: |
+          set -euo pipefail
+          if grep -E "depends on axioms" three-mode-axioms.txt \
+              | grep -Ev '^.*\[(propext, )?(Classical.choice, )?(Quot.sound)?\]$'; then
+            echo 'Unexpected axiom dependency.' >&2
+            exit 1
+          fi
