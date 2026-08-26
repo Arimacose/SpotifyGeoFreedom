@@ -63,6 +63,7 @@ theorem orthogonalCombinationNormSq
   simp only [Real.norm_eq_abs, mul_zero, add_zero]
   ring_nf
   rw [sq_abs a, sq_abs b]
+  ring
 
 /-- Exact leakage energy of the boundary-zero combination
 `a rHigh - b rLow`. -/
