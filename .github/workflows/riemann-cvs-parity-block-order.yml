@@ -1,0 +1,112 @@
+name: Riemann CvS parity block order
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - research/riemann-cvs-numerics/certify_parity_gap.py
+      - research/riemann-cvs-numerics/certify_parity_block_order.py
+      - .github/workflows/riemann-cvs-parity-block-order.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  classify-block-order:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - c: 5
+            N: 20
+            prec: 900
+          - c: 7
+            N: 20
+            prec: 900
+          - c: 11
+            N: 20
+            prec: 900
+          - c: 13
+            N: 10
+            prec: 700
+          - c: 13
+            N: 20
+            prec: 900
+          - c: 13
+            N: 30
+            prec: 1200
+          - c: 13
+            N: 40
+            prec: 1600
+          - c: 17
+            N: 20
+            prec: 1000
+          - c: 23
+            N: 20
+            prec: 1000
+          - c: 29
+            N: 20
+            prec: 1100
+          - c: 50
+            N: 20
+            prec: 1200
+          - c: 100
+            N: 20
+            prec: 1400
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install interval dependency
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install python-flint==0.8.0
+
+      - name: Classify parity block difference
+        run: |
+          set -euo pipefail
+          mkdir -p research/riemann-cvs-numerics/artifacts
+          python research/riemann-cvs-numerics/certify_parity_block_order.py \
+            --c ${{ matrix.c }} \
+            --N ${{ matrix.N }} \
+            --prec ${{ matrix.prec }} \
+            --json-out research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_parity_block_order.json
+
+      - name: Show classification
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          c = os.environ['CASE_C']
+          n = os.environ['CASE_N']
+          path = f'research/riemann-cvs-numerics/artifacts/c{c}_N{n}_parity_block_order.json'
+          with open(path, encoding='utf-8') as handle:
+              data = json.load(handle)
+          print(json.dumps({
+              'status': data['status'],
+              'scope': data['scope'],
+              'c': data['c'],
+              'N': data['N'],
+              'O_minus_C': data['odd_minus_nonconstant_even'],
+              'C_minus_O': data['nonconstant_even_minus_odd'],
+          }, indent=2))
+          PY
+        env:
+          CASE_C: ${{ matrix.c }}
+          CASE_N: ${{ matrix.N }}
+
+      - name: Upload classification certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-c${{ matrix.c }}-N${{ matrix.N }}-parity-block-order
+          path: research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_parity_block_order.json
+          if-no-files-found: error
