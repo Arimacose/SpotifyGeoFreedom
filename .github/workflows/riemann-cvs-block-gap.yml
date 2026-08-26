@@ -1,0 +1,78 @@
+name: Riemann CvS block-gap verification
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/BlockGapTransfer.lean'
+      - '.github/workflows/riemann-cvs-block-gap.yml'
+  pull_request:
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/BlockGapTransfer.lean'
+      - '.github/workflows/riemann-cvs-block-gap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    env:
+      LEAN_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pinned Lean and Mathlib cache
+        uses: leanprover/lean-action@6835ef47e8423fa9e9eacfcbb8fdf83fae42c820
+        with:
+          lake-package-directory: research/riemann-cvs-lean
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+
+      - name: Elaborate block-gap module
+        working-directory: research/riemann-cvs-lean
+        run: lake env lean RiemannCvs/BlockGapTransfer.lean
+
+      - name: Reject proof placeholders and user axioms
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' RiemannCvs/BlockGapTransfer.lean; then
+            echo 'Proof placeholder detected.' >&2
+            exit 1
+          fi
+          if grep -nE '^[[:space:]]*(axiom|constant)[[:space:]]' RiemannCvs/BlockGapTransfer.lean; then
+            echo 'User axiom/constant detected.' >&2
+            exit 1
+          fi
+
+      - name: Print theorem axiom dependencies
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/BlockGapAxioms.lean <<'EOF'
+          import RiemannCvs.BlockGapTransfer
+          #print axioms RiemannCvs.BlockGapTransfer.twoByTwoFormNonnegative
+          #print axioms RiemannCvs.BlockGapTransfer.blockLowerBound
+          #print axioms RiemannCvs.BlockGapTransfer.lambdaEightBlockLowerBound
+          #print axioms RiemannCvs.BlockGapTransfer.lambdaEightDeterminantFromCouplingBudget
+          #print axioms RiemannCvs.BlockGapTransfer.quarticEvenOddSeparation
+          #print axioms RiemannCvs.BlockGapTransfer.quarticEvenOddSeparationFromCouplingBudget
+          EOF
+          lake env lean /tmp/BlockGapAxioms.lean | tee block-gap-axioms.txt
+          if grep -E 'sorryAx|RiemannCvs\..*axiom' block-gap-axioms.txt; then
+            echo 'Unexpected axiom dependency detected.' >&2
+            exit 1
+          fi
+
+      - name: Upload axiom report
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-block-gap-axioms
+          path: research/riemann-cvs-lean/block-gap-axioms.txt
