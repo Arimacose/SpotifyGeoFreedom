@@ -77,7 +77,7 @@ reference parity ratio `ePlus / eMinus`.  The bridge need not be close to an
 isometry: it suffices that `M * rho < m`. -/
 theorem conditionedParityTransfer
     (ePlus eMinus qPlus qMinus m M rho : ℝ)
-    (hePlus : 0 ≤ ePlus)
+    (_hePlus : 0 ≤ ePlus)
     (heMinus : 0 < eMinus)
     (hM : 0 ≤ M)
     (hUpper : qPlus ≤ M * ePlus)
@@ -132,7 +132,7 @@ The hypothesis `M * C < m * λ⁴` says precisely that the transfer distortion
 `M/m` grows more slowly than the available quartic margin at this finite scale. -/
 theorem quarticMarginParityTransfer
     (ePlus eMinus qPlus qMinus m M C lambda : ℝ)
-    (hePlus : 0 ≤ ePlus)
+    (_hePlus : 0 ≤ ePlus)
     (heMinus : 0 < eMinus)
     (hM : 0 ≤ M)
     (hLambda : 0 < lambda)
@@ -142,21 +142,28 @@ theorem quarticMarginParityTransfer
     (hQuarticMargin : M * C < m * lambda ^ 4) :
     qPlus < qMinus := by
   have hlambda4 : 0 < lambda ^ 4 := pow_pos hLambda 4
-  have hRatio : ePlus ≤ (C / lambda ^ 4) * eMinus := by
-    apply (le_div_iff₀ hlambda4).2
+  have hUpperScaled :
+      lambda ^ 4 * qPlus ≤ lambda ^ 4 * (M * ePlus) :=
+    mul_le_mul_of_nonneg_left hUpper (le_of_lt hlambda4)
+  have hQuarticScaled :
+      M * (lambda ^ 4 * ePlus) ≤ M * (C * eMinus) :=
+    mul_le_mul_of_nonneg_left hQuarticRatio hM
+  have hMarginScaled :
+      (M * C) * eMinus < (m * lambda ^ 4) * eMinus :=
+    mul_lt_mul_of_pos_right hQuarticMargin heMinus
+  have hLowerScaled :
+      lambda ^ 4 * (m * eMinus) ≤ lambda ^ 4 * qMinus :=
+    mul_le_mul_of_nonneg_left hLower (le_of_lt hlambda4)
+  have hScaled : lambda ^ 4 * qPlus < lambda ^ 4 * qMinus := by
     nlinarith
-  have hCondition : M * (C / lambda ^ 4) < m := by
-    apply (div_lt_iff₀ hlambda4).2
-    nlinarith
-  exact conditionedParityTransfer ePlus eMinus qPlus qMinus m M
-    (C / lambda ^ 4) hePlus heMinus hM hUpper hLower hRatio hCondition
+  exact (mul_lt_mul_left hlambda4).mp hScaled
 
 /-- Additive comparison errors may be absorbed into the multiplicative
 condition-number budget when they are measured in units of the odd reference
 energy. -/
 theorem conditionedTransferWithAdditiveErrors
     (ePlus eMinus qPlus qMinus m M rho errPlus errMinus : ℝ)
-    (hePlus : 0 ≤ ePlus)
+    (_hePlus : 0 ≤ ePlus)
     (heMinus : 0 < eMinus)
     (hM : 0 ≤ M)
     (hUpper : qPlus ≤ M * ePlus + errPlus * eMinus)
