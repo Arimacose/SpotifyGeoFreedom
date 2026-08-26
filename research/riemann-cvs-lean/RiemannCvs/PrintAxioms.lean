@@ -27,3 +27,9 @@ import RiemannCvs
 #print axioms RiemannCvs.ProlateParityTransfer.constrainedParitySeparation
 #print axioms RiemannCvs.ProlateParityTransfer.oneSidedWeilParityTransfer
 #print axioms RiemannCvs.ProlateParityTransfer.absoluteErrorWeilParityTransfer
+#print axioms RiemannCvs.RadicalTailTransfer.radicalSplitEnergyIdentity
+#print axioms RiemannCvs.RadicalTailTransfer.radicalDifferenceEnergyIdentity
+#print axioms RiemannCvs.RadicalTailTransfer.conditionedParityTransfer
+#print axioms RiemannCvs.RadicalTailTransfer.conditionNumberParityTransfer
+#print axioms RiemannCvs.RadicalTailTransfer.quarticMarginParityTransfer
+#print axioms RiemannCvs.RadicalTailTransfer.conditionedTransferWithAdditiveErrors
