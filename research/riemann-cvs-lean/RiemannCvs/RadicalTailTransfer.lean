@@ -156,7 +156,11 @@ theorem quarticMarginParityTransfer
     mul_le_mul_of_nonneg_left hLower (le_of_lt hlambda4)
   have hScaled : lambda ^ 4 * qPlus < lambda ^ 4 * qMinus := by
     nlinarith
-  nlinarith
+  by_contra hnot
+  have hReverse : qMinus ≤ qPlus := le_of_not_gt hnot
+  have hReverseScaled : lambda ^ 4 * qMinus ≤ lambda ^ 4 * qPlus :=
+    mul_le_mul_of_nonneg_left hReverse (le_of_lt hlambda4)
+  exact (not_lt_of_ge hReverseScaled) hScaled
 
 /-- Additive comparison errors may be absorbed into the multiplicative
 condition-number budget when they are measured in units of the odd reference
