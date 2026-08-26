@@ -73,12 +73,8 @@ theorem boundaryCombinationNormSq
     (hHigh : ‖rHigh‖ ^ 2 = dHigh) :
     ‖a • rHigh - b • rLow‖ ^ 2 =
       a ^ 2 * dHigh + b ^ 2 * dLow := by
-  have horthNeg : ⟪rHigh, -rLow⟫_ℝ = 0 := by
-    simp [horth]
-  have h := orthogonalCombinationNormSq rHigh (-rLow) a b horthNeg
-  rw [smul_neg, ← neg_smul, neg_neg] at h
-  rw [norm_neg, hLow, hHigh] at h
-  nlinarith
+  have h := orthogonalCombinationNormSq rHigh rLow a (-b) horth
+  simpa [sub_eq_add_neg, hLow, hHigh] using h
 
 /-- Dividing the exact leakage of a boundary-zero combination by its squared
 coefficient norm gives the exact normalized candidate energy. -/
@@ -98,32 +94,42 @@ normalized boundary-zero candidate is bounded by the corresponding weighted
 coefficient. -/
 theorem normalizedLeakageUpperBound
     (aSq bSq dLow dHigh alpha energy : ℝ)
-    (haSq : 0 ≤ aSq)
+    (_haSq : 0 ≤ aSq)
     (hbSq : 0 ≤ bSq)
     (hden : 0 < aSq + bSq)
-    (hdHigh : 0 ≤ dHigh)
+    (_hdHigh : 0 ≤ dHigh)
     (hdLow : dLow ≤ alpha * dHigh)
     (henergy : energy = (aSq * dHigh + bSq * dLow) / (aSq + bSq)) :
     energy ≤ ((aSq + bSq * alpha) / (aSq + bSq)) * dHigh := by
   rw [henergy]
-  apply (div_le_iff₀ hden).2
-  have hscaled := mul_le_mul_of_nonneg_left hdLow hbSq
-  field_simp [ne_of_gt hden]
-  nlinarith
+  have hscaled : bSq * dLow ≤ bSq * (alpha * dHigh) :=
+    mul_le_mul_of_nonneg_left hdLow hbSq
+  have hnum :
+      aSq * dHigh + bSq * dLow ≤ (aSq + bSq * alpha) * dHigh := by
+    nlinarith
+  calc
+    (aSq * dHigh + bSq * dLow) / (aSq + bSq)
+        ≤ ((aSq + bSq * alpha) * dHigh) / (aSq + bSq) :=
+          (div_le_div_iff_of_pos_right hden).2 hnum
+    _ = ((aSq + bSq * alpha) / (aSq + bSq)) * dHigh := by ring
 
 /-- Matching lower bound when the lower-mode defect is nonnegative. -/
 theorem normalizedLeakageLowerBound
     (aSq bSq dLow dHigh energy : ℝ)
-    (haSq : 0 ≤ aSq)
+    (_haSq : 0 ≤ aSq)
     (hbSq : 0 ≤ bSq)
     (hden : 0 < aSq + bSq)
     (hdLow : 0 ≤ dLow)
     (henergy : energy = (aSq * dHigh + bSq * dLow) / (aSq + bSq)) :
     (aSq / (aSq + bSq)) * dHigh ≤ energy := by
   rw [henergy]
-  apply (le_div_iff₀ hden).2
   have hnonneg : 0 ≤ bSq * dLow := mul_nonneg hbSq hdLow
-  field_simp [ne_of_gt hden]
-  nlinarith
+  have hnum : aSq * dHigh ≤ aSq * dHigh + bSq * dLow := by
+    nlinarith
+  calc
+    (aSq / (aSq + bSq)) * dHigh
+        = (aSq * dHigh) / (aSq + bSq) := by ring
+    _ ≤ (aSq * dHigh + bSq * dLow) / (aSq + bSq) :=
+      (div_le_div_iff_of_pos_right hden).2 hnum
 
 end RiemannCvs.ProlateLeakage
