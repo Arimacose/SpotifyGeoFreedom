@@ -33,3 +33,10 @@ import RiemannCvs
 #print axioms RiemannCvs.RadicalTailTransfer.conditionNumberParityTransfer
 #print axioms RiemannCvs.RadicalTailTransfer.quarticMarginParityTransfer
 #print axioms RiemannCvs.RadicalTailTransfer.conditionedTransferWithAdditiveErrors
+#print axioms RiemannCvs.ProlateLeakage.leakageNormSq
+#print axioms RiemannCvs.ProlateLeakage.leakageOrthogonal
+#print axioms RiemannCvs.ProlateLeakage.orthogonalCombinationNormSq
+#print axioms RiemannCvs.ProlateLeakage.boundaryCombinationNormSq
+#print axioms RiemannCvs.ProlateLeakage.normalizedBoundaryLeakage
+#print axioms RiemannCvs.ProlateLeakage.normalizedLeakageUpperBound
+#print axioms RiemannCvs.ProlateLeakage.normalizedLeakageLowerBound
