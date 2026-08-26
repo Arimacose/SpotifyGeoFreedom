@@ -1,0 +1,99 @@
+name: Riemann CvS parity Galerkin ladder
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - research/riemann-cvs-numerics/certify_parity_gap.py
+      - research/riemann-cvs-numerics/certify_parity_auto.py
+      - .github/workflows/riemann-cvs-parity-ladder.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-ladder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - c: 13
+            N: 10
+            prec: 600
+            max_exp: 140
+          - c: 13
+            N: 20
+            prec: 900
+            max_exp: 180
+          - c: 13
+            N: 30
+            prec: 1200
+            max_exp: 220
+          - c: 13
+            N: 40
+            prec: 1600
+            max_exp: 280
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install interval dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install mpmath==1.3.0 python-flint==0.8.0
+
+      - name: Certify finite simple-even ordering
+        run: |
+          set -euo pipefail
+          mkdir -p research/riemann-cvs-numerics/artifacts
+          python research/riemann-cvs-numerics/certify_parity_auto.py \
+            --c ${{ matrix.c }} \
+            --N ${{ matrix.N }} \
+            --prec ${{ matrix.prec }} \
+            --max-exp ${{ matrix.max_exp }} \
+            --json-out research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_parity_auto.json
+
+      - name: Show certificate summary
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          c = os.environ['CASE_C']
+          n = os.environ['CASE_N']
+          p = f'research/riemann-cvs-numerics/artifacts/c{c}_N{n}_parity_auto.json'
+          with open(p, encoding='utf-8') as f:
+              d = json.load(f)
+          print(json.dumps({
+              'status': d['status'],
+              'statement': d['statement'],
+              'scope': d['scope'],
+              'c': d['c'],
+              'N': d['N'],
+              'threshold': d['threshold'],
+              'approximate_even_lowest_two': d['heuristic_midpoint_spectrum']['even_lowest_two'],
+              'approximate_odd_lowest': d['heuristic_midpoint_spectrum']['odd_lowest'],
+              'even_unshifted_inertia': [d['even_unshifted']['n_pos'], d['even_unshifted']['n_neg']],
+              'odd_unshifted_inertia': [d['odd_unshifted']['n_pos'], d['odd_unshifted']['n_neg']],
+              'even_shifted_inertia': [d['even_shifted']['n_pos'], d['even_shifted']['n_neg']],
+              'odd_shifted_inertia': [d['odd_shifted']['n_pos'], d['odd_shifted']['n_neg']],
+          }, indent=2))
+          PY
+        env:
+          CASE_C: ${{ matrix.c }}
+          CASE_N: ${{ matrix.N }}
+
+      - name: Upload interval certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-c${{ matrix.c }}-N${{ matrix.N }}-parity-auto
+          path: research/riemann-cvs-numerics/artifacts/c${{ matrix.c }}_N${{ matrix.N }}_parity_auto.json
+          if-no-files-found: error
