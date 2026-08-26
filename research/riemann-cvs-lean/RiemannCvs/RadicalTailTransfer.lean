@@ -156,7 +156,7 @@ theorem quarticMarginParityTransfer
     mul_le_mul_of_nonneg_left hLower (le_of_lt hlambda4)
   have hScaled : lambda ^ 4 * qPlus < lambda ^ 4 * qMinus := by
     nlinarith
-  exact (mul_lt_mul_left hlambda4).mp hScaled
+  nlinarith
 
 /-- Additive comparison errors may be absorbed into the multiplicative
 condition-number budget when they are measured in units of the odd reference
