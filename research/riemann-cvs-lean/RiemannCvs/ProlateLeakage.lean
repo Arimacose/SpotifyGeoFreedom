@@ -60,9 +60,9 @@ theorem orthogonalCombinationNormSq
       a ^ 2 * ‖r₀‖ ^ 2 + b ^ 2 * ‖r₁‖ ^ 2 := by
   rw [norm_add_sq_real, norm_smul, norm_smul,
     real_inner_smul_left, real_inner_smul_right, horth]
-  simp only [Real.norm_eq_abs, mul_zero, zero_mul, add_zero]
-  rw [sq_abs, sq_abs]
-  ring
+  simp only [Real.norm_eq_abs, mul_zero, add_zero]
+  ring_nf
+  rw [sq_abs a, sq_abs b]
 
 /-- Exact leakage energy of the boundary-zero combination
 `a rHigh - b rLow`. -/
@@ -80,7 +80,7 @@ theorem boundaryCombinationNormSq
 coefficient norm gives the exact normalized candidate energy. -/
 theorem normalizedBoundaryLeakage
     (rLow rHigh : F) (a b dLow dHigh : ℝ)
-    (hden : a ^ 2 + b ^ 2 ≠ 0)
+    (_hden : a ^ 2 + b ^ 2 ≠ 0)
     (horth : ⟪rHigh, rLow⟫_ℝ = 0)
     (hLow : ‖rLow‖ ^ 2 = dLow)
     (hHigh : ‖rHigh‖ ^ 2 = dHigh) :
