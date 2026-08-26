@@ -121,7 +121,7 @@ def positive_ldlt(A: arb_mat) -> LDLFactors:
 
 
 def inverse_upper(U: arb_mat) -> arb_mat:
-    """Inverse of an upper triangular Arb matrix with nonzero diagonal."""
+    """Inverse of an upper triangular Arb matrix with strictly signed diagonal."""
     n = U.nrows()
     if n != U.ncols():
         raise ValueError("square matrix required")
@@ -132,9 +132,12 @@ def inverse_upper(U: arb_mat) -> arb_mat:
             rhs = arb(1) if i == column else arb(0)
             for k in range(i + 1, n):
                 rhs -= U[i, k] * x[k]
-            if U[i, i].contains_zero():
-                raise RuntimeError(f"upper-triangular diagonal {i} contains zero")
-            x[i] = rhs / U[i, i]
+            diagonal = U[i, i]
+            if not (diagonal > 0 or diagonal < 0):
+                raise RuntimeError(
+                    f"upper-triangular diagonal {i} is not strictly signed"
+                )
+            x[i] = rhs / diagonal
         for i in range(n):
             out[i, column] = x[i]
     return out
