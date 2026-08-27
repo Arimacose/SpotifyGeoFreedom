@@ -40,16 +40,17 @@ jobs:
           lint: false
           use-mathlib-cache: true
 
-      - name: Elaborate parity bridge modules
+      - name: Build parity bridge modules
         working-directory: research/riemann-cvs-lean
         run: |
           set -euo pipefail
-          lake env lean RiemannCvs/SylvesterNoCrossing.lean
-          lake env lean RiemannCvs/ParityOrderContinuation.lean
-          lake env lean RiemannCvs/BoundaryGapNoCrossing.lean
-          lake env lean RiemannCvs/FourierInversionBridge.lean
-          lake env lean RiemannCvs/ParityProjection.lean
-          lake env lean RiemannCvs/CompressedParityProjection.lean
+          lake build \
+            RiemannCvs.SylvesterNoCrossing \
+            RiemannCvs.ParityOrderContinuation \
+            RiemannCvs.BoundaryGapNoCrossing \
+            RiemannCvs.FourierInversionBridge \
+            RiemannCvs.ParityProjection \
+            RiemannCvs.CompressedParityProjection
 
       - name: Reject placeholders and print axioms
         working-directory: research/riemann-cvs-lean
