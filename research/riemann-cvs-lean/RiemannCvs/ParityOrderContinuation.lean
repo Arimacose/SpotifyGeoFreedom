@@ -40,8 +40,7 @@ theorem strictOrderPersistsOnIcc
       ha hx hf hg (le_of_lt hstart) hcross
   exact (hneq y hy) heq
 
-/-- Half-line version of `strictOrderPersistsOnIcc`.  A single certified anchor
-value plus a global no-crossing theorem controls the entire parameter ray. -/
+/-- Half-line version anchored at the left endpoint. -/
 theorem strictOrderPersistsOnIci
     (f g : ℝ → ℝ) (a : ℝ)
     (hf : ContinuousOn f (Ici a))
@@ -61,8 +60,28 @@ theorem strictOrderPersistsOnIci
   exact strictOrderPersistsOnIcc f g a x hax hfIcc hgIcc
     hstart hneqIcc x ⟨hax, le_rfl⟩
 
-/-- Equivalent formulation for a continuous gap function.  Positivity at one
-anchor and absence of zeros imply positivity on the whole half-line. -/
+/-- Stronger half-line continuation theorem.  The strict ordering may be known
+at any single anchor point `b ≥ a`, including an asymptotic or numerically
+certified large parameter.  No-crossing then propagates the order both forward
+and backward throughout the connected ray `Ici a`. -/
+theorem strictOrderOnIciFromAnyAnchor
+    (f g : ℝ → ℝ) (a b : ℝ)
+    (hb : b ∈ Ici a)
+    (hf : ContinuousOn f (Ici a))
+    (hg : ContinuousOn g (Ici a))
+    (hanchor : f b < g b)
+    (hneq : ∀ x ∈ Ici a, f x ≠ g x) :
+    ∀ x ∈ Ici a, f x < g x := by
+  intro x hx
+  by_contra hnot
+  have hcross : g x ≤ f x := le_of_not_gt hnot
+  obtain ⟨y, hy, heq⟩ :=
+    isPreconnected_Ici.intermediate_value₂
+      hb hx hf hg (le_of_lt hanchor) hcross
+  exact (hneq y hy) heq
+
+/-- Equivalent formulation for a continuous gap function, anchored at the left
+endpoint. -/
 theorem positiveGapPersistsOnIci
     (gap : ℝ → ℝ) (a : ℝ)
     (hgap : ContinuousOn gap (Ici a))
@@ -75,6 +94,22 @@ theorem positiveGapPersistsOnIci
     exact (hnonzero x hx).symm
   exact strictOrderPersistsOnIci (fun _ : ℝ => 0) gap a
     hzero hgap hstart hneq
+
+/-- Gap-function form anchored at an arbitrary point of the ray.  This is the
+form useful when positivity is first proved only in an asymptotic regime. -/
+theorem positiveGapOnIciFromAnyAnchor
+    (gap : ℝ → ℝ) (a b : ℝ)
+    (hb : b ∈ Ici a)
+    (hgap : ContinuousOn gap (Ici a))
+    (hanchor : 0 < gap b)
+    (hnonzero : ∀ x ∈ Ici a, gap x ≠ 0) :
+    ∀ x ∈ Ici a, 0 < gap x := by
+  have hzero : ContinuousOn (fun _ : ℝ => 0) (Ici a) := continuousOn_const
+  have hneq : ∀ x ∈ Ici a, (0 : ℝ) ≠ gap x := by
+    intro x hx
+    exact (hnonzero x hx).symm
+  exact strictOrderOnIciFromAnyAnchor (fun _ : ℝ => 0) gap a b
+    hb hzero hgap hanchor hneq
 
 /-- A finite certified interval can be attached to a no-crossing ray without
 rechecking the sign pointwise beyond the right endpoint. -/
