@@ -1,4 +1,4 @@
-import Mathlib.Topology.Order.IntermediateValue
+import Mathlib
 
 /-!
 # Continuation of a strict parity ordering
