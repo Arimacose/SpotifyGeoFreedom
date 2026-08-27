@@ -7,11 +7,13 @@ on:
     paths:
       - 'research/riemann-cvs-lean/RiemannCvs/ParityOrderContinuation.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   pull_request:
     paths:
       - 'research/riemann-cvs-lean/RiemannCvs/ParityOrderContinuation.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   workflow_dispatch:
 
@@ -32,12 +34,13 @@ jobs:
           lint: false
           use-mathlib-cache: true
 
-      - name: Elaborate continuation modules
+      - name: Elaborate parity bridge modules
         working-directory: research/riemann-cvs-lean
         run: |
           set -euo pipefail
           lake env lean RiemannCvs/ParityOrderContinuation.lean
           lake env lean RiemannCvs/BoundaryGapNoCrossing.lean
+          lake env lean RiemannCvs/FourierInversionBridge.lean
 
       - name: Reject placeholders and print axioms
         working-directory: research/riemann-cvs-lean
@@ -46,18 +49,28 @@ jobs:
           set -euo pipefail
           if grep -nE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' \
             RiemannCvs/ParityOrderContinuation.lean \
-            RiemannCvs/BoundaryGapNoCrossing.lean; then
+            RiemannCvs/BoundaryGapNoCrossing.lean \
+            RiemannCvs/FourierInversionBridge.lean; then
             exit 1
           fi
           cat > /tmp/ParityContinuationAxioms.lean <<'EOF'
           import RiemannCvs.ParityOrderContinuation
           import RiemannCvs.BoundaryGapNoCrossing
+          import RiemannCvs.FourierInversionBridge
           #print axioms RiemannCvs.ParityOrderContinuation.strictOrderPersistsOnIcc
           #print axioms RiemannCvs.ParityOrderContinuation.strictOrderPersistsOnIci
+          #print axioms RiemannCvs.ParityOrderContinuation.strictOrderOnIciFromAnyAnchor
           #print axioms RiemannCvs.ParityOrderContinuation.positiveGapPersistsOnIci
+          #print axioms RiemannCvs.ParityOrderContinuation.positiveGapOnIciFromAnyAnchor
           #print axioms RiemannCvs.ParityOrderContinuation.compactCertificateAndNoCrossingRay
           #print axioms RiemannCvs.BoundaryGapNoCrossing.boundaryValueNonzeroOfStrictConstraintGap
           #print axioms RiemannCvs.BoundaryGapNoCrossing.noCommonEigenvalueFromConstraintGaps
+          #print axioms RiemannCvs.FourierInversionBridge.gradingEigenvectorTransfer
+          #print axioms RiemannCvs.FourierInversionBridge.fourierPlusMapsToInversionEven
+          #print axioms RiemannCvs.FourierInversionBridge.fourierMinusMapsToInversionOdd
+          #print axioms RiemannCvs.FourierInversionBridge.gradingDefectTransfer
+          #print axioms RiemannCvs.FourierInversionBridge.gradingDefectNormBound
+          #print axioms RiemannCvs.FourierInversionBridge.pointwiseFourierClassGivesInversionParity
           EOF
           lake env lean /tmp/ParityContinuationAxioms.lean | tee parity-continuation-axioms.txt
           if grep -E 'sorryAx' parity-continuation-axioms.txt; then
