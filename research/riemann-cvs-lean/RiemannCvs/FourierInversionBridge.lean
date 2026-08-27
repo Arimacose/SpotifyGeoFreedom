@@ -87,10 +87,37 @@ theorem gradingDefectTransfer
   rw [hintertwine f, hdefect, map_add, map_smul]
   abel
 
+/-- Exact compressed-eigenvalue defect identity.  A time-limited prolate mode
+has a full Fourier transform of the form
+
+`fourier f = (epsilon * chi) • f + residual`,
+
+where `chi` is the concentration amplitude and `residual` is supported outside
+the time window.  The target inversion-parity defect splits into the amplitude
+loss and the transformed leakage. -/
+theorem compressedGradingDefectTransfer
+    (fourier : V →ₗ[ℝ] V)
+    (inversion : W →ₗ[ℝ] W)
+    (E : V →ₗ[ℝ] W)
+    (epsilon chi : ℝ) (f residual : V)
+    (hintertwine : ∀ x, inversion (E x) = E (fourier x))
+    (hdefect : fourier f = (epsilon * chi) • f + residual) :
+    inversion (E f) - epsilon • E f =
+      (epsilon * (chi - 1)) • E f + E residual := by
+  rw [hintertwine f, hdefect, map_add, map_smul]
+  module
+
+end Defect
+
+section NormDefect
+
+variable {V W : Type*}
+variable [AddCommGroup V] [Module ℝ V]
+variable [SeminormedAddCommGroup W] [NormedSpace ℝ W]
+
 /-- If a norm estimate for the map `E` is available on the residual direction,
 then the inversion-parity defect inherits the same estimate. -/
 theorem gradingDefectNormBound
-    [SeminormedAddCommGroup W] [NormedSpace ℝ W]
     (fourier : V →ₗ[ℝ] V)
     (inversion : W →ₗ[ℝ] W)
     (E : V →ₗ[ℝ] W)
@@ -104,7 +131,53 @@ theorem gradingDefectNormBound
     hintertwine hdefect]
   exact hbound
 
-end Defect
+/-- Triangle-inequality bound for the finite-prolate inversion-parity defect. -/
+theorem compressedGradingDefectNormBound
+    (fourier : V →ₗ[ℝ] V)
+    (inversion : W →ₗ[ℝ] W)
+    (E : V →ₗ[ℝ] W)
+    (epsilon chi : ℝ) (f residual : V)
+    (hintertwine : ∀ x, inversion (E x) = E (fourier x))
+    (hdefect : fourier f = (epsilon * chi) • f + residual) :
+    ‖inversion (E f) - epsilon • E f‖ ≤
+      |epsilon * (chi - 1)| * ‖E f‖ + ‖E residual‖ := by
+  rw [compressedGradingDefectTransfer fourier inversion E epsilon chi
+    f residual hintertwine hdefect]
+  calc
+    ‖(epsilon * (chi - 1)) • E f + E residual‖
+        ≤ ‖(epsilon * (chi - 1)) • E f‖ + ‖E residual‖ := norm_add_le _ _
+    _ = |epsilon * (chi - 1)| * ‖E f‖ + ‖E residual‖ := by
+      simp [Real.norm_eq_abs]
+
+/-- Fourier `+1` specialization of the compressed defect bound. -/
+theorem compressedPlusDefectNormBound
+    (fourier : V →ₗ[ℝ] V)
+    (inversion : W →ₗ[ℝ] W)
+    (E : V →ₗ[ℝ] W)
+    (chi : ℝ) (f residual : V)
+    (hintertwine : ∀ x, inversion (E x) = E (fourier x))
+    (hdefect : fourier f = chi • f + residual) :
+    ‖inversion (E f) - E f‖ ≤
+      |chi - 1| * ‖E f‖ + ‖E residual‖ := by
+  have h := compressedGradingDefectNormBound fourier inversion E 1 chi
+    f residual hintertwine (by simpa using hdefect)
+  simpa using h
+
+/-- Fourier `-1` specialization of the compressed defect bound. -/
+theorem compressedMinusDefectNormBound
+    (fourier : V →ₗ[ℝ] V)
+    (inversion : W →ₗ[ℝ] W)
+    (E : V →ₗ[ℝ] W)
+    (chi : ℝ) (f residual : V)
+    (hintertwine : ∀ x, inversion (E x) = E (fourier x))
+    (hdefect : fourier f = (-chi) • f + residual) :
+    ‖inversion (E f) + E f‖ ≤
+      |chi - 1| * ‖E f‖ + ‖E residual‖ := by
+  have h := compressedGradingDefectNormBound fourier inversion E (-1) chi
+    f residual hintertwine (by simpa using hdefect)
+  simpa [sub_eq_add_neg] using h
+
+end NormDefect
 
 section PointwiseInversion
 
