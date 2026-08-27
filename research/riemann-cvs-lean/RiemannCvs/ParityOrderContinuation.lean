@@ -88,11 +88,12 @@ theorem positiveGapPersistsOnIci
     (hstart : 0 < gap a)
     (hnonzero : ∀ x ∈ Ici a, gap x ≠ 0) :
     ∀ x ∈ Ici a, 0 < gap x := by
-  have hzero : ContinuousOn (fun _ : ℝ => 0) (Ici a) := continuousOn_const
+  have hzero :
+      ContinuousOn (fun _ : ℝ => (0 : ℝ)) (Ici a) := continuousOn_const
   have hneq : ∀ x ∈ Ici a, (0 : ℝ) ≠ gap x := by
     intro x hx
     exact (hnonzero x hx).symm
-  exact strictOrderPersistsOnIci (fun _ : ℝ => 0) gap a
+  exact strictOrderPersistsOnIci (fun _ : ℝ => (0 : ℝ)) gap a
     hzero hgap hstart hneq
 
 /-- Gap-function form anchored at an arbitrary point of the ray.  This is the
@@ -104,11 +105,12 @@ theorem positiveGapOnIciFromAnyAnchor
     (hanchor : 0 < gap b)
     (hnonzero : ∀ x ∈ Ici a, gap x ≠ 0) :
     ∀ x ∈ Ici a, 0 < gap x := by
-  have hzero : ContinuousOn (fun _ : ℝ => 0) (Ici a) := continuousOn_const
+  have hzero :
+      ContinuousOn (fun _ : ℝ => (0 : ℝ)) (Ici a) := continuousOn_const
   have hneq : ∀ x ∈ Ici a, (0 : ℝ) ≠ gap x := by
     intro x hx
     exact (hnonzero x hx).symm
-  exact strictOrderOnIciFromAnyAnchor (fun _ : ℝ => 0) gap a b
+  exact strictOrderOnIciFromAnyAnchor (fun _ : ℝ => (0 : ℝ)) gap a b
     hb hzero hgap hanchor hneq
 
 /-- A finite certified interval can be attached to a no-crossing ray without
