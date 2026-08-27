@@ -1,0 +1,58 @@
+name: Riemann CvS Parseval tail-rate verification
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/ParsevalTailRate.lean'
+      - '.github/workflows/riemann-cvs-parseval-tail-rate.yml'
+  pull_request:
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/ParsevalTailRate.lean'
+      - '.github/workflows/riemann-cvs-parseval-tail-rate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@6835ef47e8423fa9e9eacfcbb8fdf83fae42c820
+        with:
+          lake-package-directory: research/riemann-cvs-lean
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+
+      - name: Elaborate Parseval tail-rate module
+        working-directory: research/riemann-cvs-lean
+        run: lake env lean RiemannCvs/ParsevalTailRate.lean
+
+      - name: Reject placeholders and print theorem axioms
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' RiemannCvs/ParsevalTailRate.lean; then
+            exit 1
+          fi
+          cat > /tmp/ParsevalTailRateAxioms.lean <<'EOF'
+          import RiemannCvs.ParsevalTailRate
+          #print axioms RiemannCvs.ParsevalTailRate.parsevalLambdaSevenCertificate
+          #print axioms RiemannCvs.ParsevalTailRate.parsevalLambdaSevenUpperBound
+          EOF
+          lake env lean /tmp/ParsevalTailRateAxioms.lean | tee parseval-tail-rate-axioms.txt
+          if grep -E 'sorryAx' parseval-tail-rate-axioms.txt; then
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-parseval-tail-rate-axioms
+          path: research/riemann-cvs-lean/parseval-tail-rate-axioms.txt
