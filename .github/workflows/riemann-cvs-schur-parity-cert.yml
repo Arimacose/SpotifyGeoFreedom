@@ -1,0 +1,86 @@
+name: Riemann CvS finite Schur-parity certificate
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - 'research/riemann-cvs-numerics/certify_parity_gap.py'
+      - 'research/riemann-cvs-numerics/certify_schur_parity.py'
+      - '.github/workflows/riemann-cvs-schur-parity-cert.yml'
+  pull_request:
+    paths:
+      - 'research/riemann-cvs-numerics/certify_parity_gap.py'
+      - 'research/riemann-cvs-numerics/certify_schur_parity.py'
+      - '.github/workflows/riemann-cvs-schur-parity-cert.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install interval dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install mpmath==1.3.0 python-flint==0.8.0
+
+      - name: Certify c=13, N=40 finite Schur parity ordering
+        run: |
+          set -euo pipefail
+          mkdir -p research/riemann-cvs-numerics/artifacts
+          python research/riemann-cvs-numerics/certify_schur_parity.py \
+            --c 13 \
+            --N 40 \
+            --low-dim 4 \
+            --prec 500 \
+            --low-factor 0.5 \
+            --high-factor 0.25 \
+            --json-out \
+              research/riemann-cvs-numerics/artifacts/c13_N40_schur_parity.json
+
+      - name: Show certificate summary
+        run: |
+          python - <<'PY'
+          import json
+          p = (
+              'research/riemann-cvs-numerics/artifacts/'
+              'c13_N40_schur_parity.json'
+          )
+          with open(p, encoding='utf-8') as f:
+              d = json.load(f)
+          print(json.dumps({
+              'status': d['status'],
+              'statement': d['statement'],
+              'c': d['c'],
+              'N': d['N'],
+              'low_dim': d['low_dim'],
+              'even_upper': d['even_upper'],
+              'odd_after_schur_lower': d['odd_after_schur_lower'],
+              'odd_high_floor': d['odd_high_floor'],
+              'checks': d['checks'],
+              'low_ldlt': d['low_ldlt'],
+              'high_ldlt': d['high_ldlt'],
+          }, indent=2))
+          if d['status'] != 'PASS':
+              raise SystemExit(1)
+          PY
+
+      - name: Upload interval certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-c13-N40-schur-parity
+          path: >-
+            research/riemann-cvs-numerics/artifacts/c13_N40_schur_parity.json
+          if-no-files-found: error
