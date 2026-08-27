@@ -21,11 +21,11 @@ these statements.
 namespace RiemannCvs.HermiteTailAnchor
 
 /-- Polynomial factor in the first Fourier `+1` boundary-zero Hermite vector. -/
-def plusPoly (x : ℝ) : ℝ :=
+noncomputable def plusPoly (x : ℝ) : ℝ :=
   2 * Real.pi * x ^ 2 - 3
 
 /-- Polynomial factor in the first Fourier `-1` boundary-zero Hermite vector. -/
-def minusPoly (x : ℝ) : ℝ :=
+noncomputable def minusPoly (x : ℝ) : ℝ :=
   8 * Real.pi ^ 2 * x ^ 4 - 30 * Real.pi * x ^ 2 + 15
 
 /-- A convenient lower bound for `pi * x²` on the tail range. -/
@@ -87,7 +87,7 @@ theorem six_sqrt_thirty_lt_eleven_pi :
     6 * Real.sqrt 30 < 11 * Real.pi := by
   have hsqrt0 : 0 ≤ Real.sqrt (30 : ℝ) := Real.sqrt_nonneg _
   have hsqrtSq : (Real.sqrt (30 : ℝ)) ^ 2 = 30 := by
-    simpa using Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 30)
+    exact Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 30)
   have hsqrt : Real.sqrt (30 : ℝ) < 11 / 2 := by
     nlinarith
   nlinarith [Real.pi_gt_three]
