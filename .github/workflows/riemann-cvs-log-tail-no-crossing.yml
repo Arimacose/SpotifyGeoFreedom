@@ -1,0 +1,60 @@
+name: Riemann CvS logarithmic-tail no-crossing verification
+
+on:
+  push:
+    branches:
+      - research/riemann-cvs-lean-v3
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/LogTailNoCrossing.lean'
+      - '.github/workflows/riemann-cvs-log-tail-no-crossing.yml'
+  pull_request:
+    paths:
+      - 'research/riemann-cvs-lean/RiemannCvs/LogTailNoCrossing.lean'
+      - '.github/workflows/riemann-cvs-log-tail-no-crossing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@6835ef47e8423fa9e9eacfcbb8fdf83fae42c820
+        with:
+          lake-package-directory: research/riemann-cvs-lean
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+
+      - name: Elaborate logarithmic-tail module
+        working-directory: research/riemann-cvs-lean
+        run: lake env lean RiemannCvs/LogTailNoCrossing.lean
+
+      - name: Reject placeholders and print theorem axioms
+        working-directory: research/riemann-cvs-lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' RiemannCvs/LogTailNoCrossing.lean; then
+            exit 1
+          fi
+          cat > /tmp/LogTailAxioms.lean <<'EOF'
+          import RiemannCvs.LogTailNoCrossing
+          #print axioms RiemannCvs.LogTailNoCrossing.quarterMarginCorrection
+          #print axioms RiemannCvs.LogTailNoCrossing.logarithmicTailQuarterMargin
+          #print axioms RiemannCvs.LogTailNoCrossing.twoSectorNoCrossing
+          #print axioms RiemannCvs.LogTailNoCrossing.logarithmicTailNoCrossing
+          EOF
+          lake env lean /tmp/LogTailAxioms.lean | tee log-tail-axioms.txt
+          if grep -E 'sorryAx' log-tail-axioms.txt; then
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: riemann-cvs-log-tail-axioms
+          path: research/riemann-cvs-lean/log-tail-axioms.txt
