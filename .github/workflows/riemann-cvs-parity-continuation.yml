@@ -9,6 +9,7 @@ on:
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/ParityProjection.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/CompressedParityProjection.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/SylvesterNoCrossing.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   pull_request:
@@ -17,6 +18,7 @@ on:
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/ParityProjection.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/CompressedParityProjection.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/SylvesterNoCrossing.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   workflow_dispatch:
@@ -47,6 +49,7 @@ jobs:
           lake env lean RiemannCvs/BoundaryGapNoCrossing.lean
           lake env lean RiemannCvs/FourierInversionBridge.lean
           lake env lean RiemannCvs/ParityProjection.lean
+          lake env lean RiemannCvs/CompressedParityProjection.lean
 
       - name: Reject placeholders and print axioms
         working-directory: research/riemann-cvs-lean
@@ -58,7 +61,8 @@ jobs:
             RiemannCvs/ParityOrderContinuation.lean \
             RiemannCvs/BoundaryGapNoCrossing.lean \
             RiemannCvs/FourierInversionBridge.lean \
-            RiemannCvs/ParityProjection.lean; then
+            RiemannCvs/ParityProjection.lean \
+            RiemannCvs/CompressedParityProjection.lean; then
             exit 1
           fi
           cat > /tmp/ParityContinuationAxioms.lean <<'EOF'
@@ -67,6 +71,7 @@ jobs:
           import RiemannCvs.BoundaryGapNoCrossing
           import RiemannCvs.FourierInversionBridge
           import RiemannCvs.ParityProjection
+          import RiemannCvs.CompressedParityProjection
           #print axioms RiemannCvs.ParityOrderContinuation.strictOrderPersistsOnIcc
           #print axioms RiemannCvs.ParityOrderContinuation.strictOrderPersistsOnIci
           #print axioms RiemannCvs.ParityOrderContinuation.strictOrderOnIciFromAnyAnchor
@@ -75,21 +80,17 @@ jobs:
           #print axioms RiemannCvs.ParityOrderContinuation.compactCertificateAndNoCrossingRay
           #print axioms RiemannCvs.BoundaryGapNoCrossing.boundaryValueNonzeroOfStrictConstraintGap
           #print axioms RiemannCvs.BoundaryGapNoCrossing.noCommonEigenvalueFromConstraintGaps
-          #print axioms RiemannCvs.FourierInversionBridge.gradingEigenvectorTransfer
-          #print axioms RiemannCvs.FourierInversionBridge.fourierPlusMapsToInversionEven
-          #print axioms RiemannCvs.FourierInversionBridge.fourierMinusMapsToInversionOdd
-          #print axioms RiemannCvs.FourierInversionBridge.gradingDefectTransfer
           #print axioms RiemannCvs.FourierInversionBridge.compressedGradingDefectTransfer
           #print axioms RiemannCvs.FourierInversionBridge.compressedGradingDefectNormBound
           #print axioms RiemannCvs.FourierInversionBridge.compressedPlusDefectNormBound
           #print axioms RiemannCvs.FourierInversionBridge.compressedMinusDefectNormBound
-          #print axioms RiemannCvs.FourierInversionBridge.pointwiseFourierClassGivesInversionParity
-          #print axioms RiemannCvs.ParityProjection.evenPart_add_oddPart
-          #print axioms RiemannCvs.ParityProjection.map_evenPart
-          #print axioms RiemannCvs.ParityProjection.map_oddPart
           #print axioms RiemannCvs.ParityProjection.energy_split
           #print axioms RiemannCvs.ParityProjection.evenProjectionEnergyUpper
           #print axioms RiemannCvs.ParityProjection.oddProjectionEnergyUpper
+          #print axioms RiemannCvs.CompressedParityProjection.compressedDefectSqBound
+          #print axioms RiemannCvs.CompressedParityProjection.compressedDefectSqBudget
+          #print axioms RiemannCvs.CompressedParityProjection.compressedPlusProjectionEnergyUpper
+          #print axioms RiemannCvs.CompressedParityProjection.compressedMinusProjectionEnergyUpper
           EOF
           lake env lean /tmp/ParityContinuationAxioms.lean | tee parity-continuation-axioms.txt
           if grep -E 'sorryAx' parity-continuation-axioms.txt; then
