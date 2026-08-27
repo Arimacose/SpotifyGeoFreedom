@@ -23,11 +23,11 @@ variable {W : Type*}
 variable [AddCommGroup W] [Module ℝ W]
 
 /-- Projection onto the `+1` eigenspace of an involution. -/
-def evenPart (J : W →ₗ[ℝ] W) (w : W) : W :=
+noncomputable def evenPart (J : W →ₗ[ℝ] W) (w : W) : W :=
   (1 / 2 : ℝ) • (w + J w)
 
 /-- Projection onto the `-1` eigenspace of an involution. -/
-def oddPart (J : W →ₗ[ℝ] W) (w : W) : W :=
+noncomputable def oddPart (J : W →ₗ[ℝ] W) (w : W) : W :=
   (1 / 2 : ℝ) • (w - J w)
 
 /-- The two parity projections sum to the original vector. -/
@@ -59,14 +59,14 @@ theorem map_oddPart
 theorem sub_evenPart
     (J : W →ₗ[ℝ] W) (w : W) :
     w - evenPart J w = oddPart J w := by
-  have h := evenPart_add_oddPart J w
+  rw [← evenPart_add_oddPart J w]
   module
 
 /-- Removing the odd projection leaves precisely the even projection. -/
 theorem sub_oddPart
     (J : W →ₗ[ℝ] W) (w : W) :
     w - oddPart J w = evenPart J w := by
-  have h := evenPart_add_oddPart J w
+  rw [← evenPart_add_oddPart J w]
   module
 
 end Algebra
@@ -126,7 +126,10 @@ theorem even_odd_cross_zero
     B (evenPart J w) (oddPart J w) = 0 := by
   have h := hInvariant (evenPart J w) (oddPart J w)
   rw [map_evenPart J w hJ, map_oddPart J w hJ] at h
-  simp only [map_neg] at h
+  have h' :
+      -(B (evenPart J w) (oddPart J w)) =
+        B (evenPart J w) (oddPart J w) := by
+    simpa using h
   linarith
 
 /-- The opposite mixed term also vanishes; symmetry of `B` is not needed. -/
@@ -139,7 +142,10 @@ theorem odd_even_cross_zero
     B (oddPart J w) (evenPart J w) = 0 := by
   have h := hInvariant (oddPart J w) (evenPart J w)
   rw [map_oddPart J w hJ, map_evenPart J w hJ] at h
-  simp only [LinearMap.map_neg] at h
+  have h' :
+      -(B (oddPart J w) (evenPart J w)) =
+        B (oddPart J w) (evenPart J w) := by
+    simpa using h
   linarith
 
 /-- Exact quadratic-energy splitting into the two inversion sectors. -/
