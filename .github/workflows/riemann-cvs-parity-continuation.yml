@@ -8,12 +8,14 @@ on:
       - 'research/riemann-cvs-lean/RiemannCvs/ParityOrderContinuation.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/SylvesterNoCrossing.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   pull_request:
     paths:
       - 'research/riemann-cvs-lean/RiemannCvs/ParityOrderContinuation.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/BoundaryGapNoCrossing.lean'
       - 'research/riemann-cvs-lean/RiemannCvs/FourierInversionBridge.lean'
+      - 'research/riemann-cvs-lean/RiemannCvs/SylvesterNoCrossing.lean'
       - '.github/workflows/riemann-cvs-parity-continuation.yml'
   workflow_dispatch:
 
@@ -38,6 +40,7 @@ jobs:
         working-directory: research/riemann-cvs-lean
         run: |
           set -euo pipefail
+          lake env lean RiemannCvs/SylvesterNoCrossing.lean
           lake env lean RiemannCvs/ParityOrderContinuation.lean
           lake env lean RiemannCvs/BoundaryGapNoCrossing.lean
           lake env lean RiemannCvs/FourierInversionBridge.lean
@@ -48,12 +51,14 @@ jobs:
         run: |
           set -euo pipefail
           if grep -nE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' \
+            RiemannCvs/SylvesterNoCrossing.lean \
             RiemannCvs/ParityOrderContinuation.lean \
             RiemannCvs/BoundaryGapNoCrossing.lean \
             RiemannCvs/FourierInversionBridge.lean; then
             exit 1
           fi
           cat > /tmp/ParityContinuationAxioms.lean <<'EOF'
+          import RiemannCvs.SylvesterNoCrossing
           import RiemannCvs.ParityOrderContinuation
           import RiemannCvs.BoundaryGapNoCrossing
           import RiemannCvs.FourierInversionBridge
